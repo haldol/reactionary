@@ -3,11 +3,9 @@ import ReactDOM from 'react-dom';
 import './index.css';
 
 function Square(props) {
-    
-    const thisclass = props.winner ? "square winner" : "square";
     return (
         <button
-            className={thisclass} onClick={props.onClick}>
+            className={props.spclass} onClick={props.onClick}>
             {props.value}
         </button>
     );
@@ -20,7 +18,7 @@ function checkForARealWinner(squares) {
         [6, 7, 8],
         [0, 3, 6],
         [1, 4, 7],
-        [2, 5, 7],
+        [2, 5, 8],
         [0, 4, 8],
         [2, 4, 6],
     ]
@@ -33,45 +31,41 @@ function checkForARealWinner(squares) {
     return null;
 }
 
-class Board extends React.Component {
-    
-    renderSquare(i, winningSquare) {
-        let ws=false
-        if (i === winningSquare) {
-            ws = true
-        }
+function Board(props) {
+    let squareRender = (i, ws) => {
+        const highlith = i === ws ? "square winner" : "square";
         return (
             <Square
-                value={this.props.squares[i]}
-                onClick={() => this.props.onClick(i)}
-                winner={ws}
+                value={props.squares[i]}
+                onClick={() => props.onClick(i)}
+                spclass={highlith}
             />
         );
     }
-
-    render() {
-        return (
-            <div>
-                <div className="board-row">
-                    {this.renderSquare(0, this.props.winningSquare)}
-                    {this.renderSquare(1, this.props.winningSquare)}
-                    {this.renderSquare(2, this.props.winningSquare)}
-                </div>
-                <div className="board-row">
-                    {this.renderSquare(3, this.props.winningSquare)}
-                    {this.renderSquare(4, this.props.winningSquare)}
-                    {this.renderSquare(5, this.props.winningSquare)}
-                </div>
-                <div className="board-row">
-                    {this.renderSquare(6, this.props.winningSquare)}
-                    {this.renderSquare(7, this.props.winningSquare)}
-                    {this.renderSquare(8, this.props.winningSquare)}
-                </div>
+    return (
+        <div>
+            <div className="board-row">
+                {squareRender(0, props.winningSquare)}
+                {squareRender(1, props.winningSquare)}
+                {squareRender(2, props.winningSquare)}
             </div>
-        );
-    }
+            <div className="board-row">
+                {squareRender(3, props.winningSquare)}
+                {squareRender(4, props.winningSquare)}
+                {squareRender(5, props.winningSquare)}
+            </div>
+            <div className="board-row">
+                {squareRender(6, props.winningSquare)}
+                {squareRender(7, props.winningSquare)}
+                {squareRender(8, props.winningSquare)}
+            </div>
+        </div>
+    );
 }
 
+function mapPosition(i) {
+    return "("+Math.floor(i / 3)+","+i % 3+")"
+}
 
 class Game extends React.Component {
     constructor(props) {
@@ -115,11 +109,6 @@ class Game extends React.Component {
         })
     }
 
-    mapPosition(i) {
-        const y = i % 3
-        const x = Math.floor(i / 3)
-        return "("+x+","+y+")"
-    }
 
     jumpTo(step) {
         this.setState({
@@ -135,7 +124,7 @@ class Game extends React.Component {
 
         const moves = history.map((step, move) => {
             const desc = move ? 
-            'Go to Move #' + move +' @ '+ this.mapPosition(step.position): 
+            'Go to Move #' + move +' @ '+ mapPosition(step.position): 
             'Go to game start';
             const weightclass = this.state.stepNumber === move ? "heavy" : "light"
             return (
