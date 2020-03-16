@@ -67,72 +67,59 @@ function mapPosition(i) {
     return "(" + Math.floor(i / 3) + "," + i % 3 + ")"
 }
 
-function Game() {
+function Game(props) {
     
-    let [now, setNow] = useState(null)
-
-    if (now === null) {
-        now = {
-            history: [{
-                squares: Array(9).fill(null),
-                position: -1,
-            }],
-            stepNumber: 0,
-            xNext: true,
-            sort: 1,
-        };
-        setNow(now)
-    }
-        
-
+    let [history, setHistory] = useState([{
+            squares: Array(9).fill(null),
+            position: -1,
+        }]);
+    let [stepNumber, setStepNumber] = useState( 0 );
+    let [xNext, setXNext] = useState( true );
+    let [sort, setSort] = useState( 1 );
+    
     let handleClick = function (i) {
-        const history = now.history.slice(0, now.stepNumber + 1);
-        const current = history[now.stepNumber];
+        const nowStory = history.slice(0, stepNumber + 1);
+        const current = nowStory[stepNumber];
         const squareSlice = current.squares.slice();
 
         if (checkForARealWinner(squareSlice) || squareSlice[i]) {
             return;
         }
 
-        squareSlice[i] = now.xNext ? 'X' : 'O';
-        this.setState({
-            history: history.concat([{
+        squareSlice[i] = xNext ? 'X' : 'O';
+        setHistory(nowStory.concat([{
                 squares: squareSlice,
                 position: i,
-            }]),
-            stepNumber: history.length,
-            xNext: !now.xNext,
-        });
+            }]));
+        setStepNumber(nowStory.length)
+        setXNext(!xNext) 
+        
         return;
     }
 
     let handleSortClick = function () {
-        const current = now.sort
-        this.setState({
-            sort: current * -1,
-        })
+        const current = sort
+        setSort(current * -1)        
         return;
     }
 
 
     let jumpTo = function (step) {
-        this.setState({
-            stepNumber: step,
-            xNext: (step % 2) === 0,
-        });
+        setStepNumber( step);
+        setXNext( (step % 2) === 0);
         return;
     }
 
 
-    const history = now.history.slice(0, now.stepNumber + 1);
-    const current = history[now.stepNumber];
+    const nowStory = history.slice(0, stepNumber + 1);
+    const current = history[stepNumber];
     const winner = checkForARealWinner(current.squares);
 
-    const moves = history.map((step, move) => {
+    const moves = nowStory.map((step, move) => {
         const desc = move ?
             'Go to Move #' + move + ' @ ' + mapPosition(step.position) :
             'Go to game start';
-        const weightclass = now.stepNumber === move ? "heavy" : "light"
+        const weightclass = stepNumber === move ? "heavy" : "light"
         return (
             <li key={move}>
                 <button className={weightclass} onClick={() => jumpTo(move)}>{desc}</button>
@@ -148,10 +135,10 @@ function Game() {
             ws = current.position
             stat = 'THE WINNER IS : ' + ww;
         } else {
-            if (now.stepNumber === 9) {
+            if (stepNumber === 9) {
                 stat = 'Dude bro, total draw.'
             } else {
-                stat = 'Next player: ' + (now.xNext ? 'X' : 'O');
+                stat = 'Next player: ' + (xNext ? 'X' : 'O');
             }
         }
         return [stat, ws]
@@ -172,7 +159,7 @@ function Game() {
                 <div>{status}</div>
                 <button onClick={() => handleSortClick()}>Flip Sort</button>
                 <ol>{moves.sort((a, b) => {
-                    if (now.sort > 0) {
+                    if (sort > 0) {
                         return a.key > b.key
                     }
                     return a.key < b.key
